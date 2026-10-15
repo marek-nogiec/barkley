@@ -11,8 +11,9 @@ use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol, Sel};
 use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send, sel};
 use objc2_app_kit::{
-    NSApplicationDelegate, NSControl, NSControlTextEditingDelegate, NSStatusItem, NSTableColumn, NSTableRowView,
-    NSTableView, NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate, NSTextView, NSView, NSWindowDelegate,
+    NSApplicationDelegate, NSControl, NSControlStateValueOff, NSControlStateValueOn, NSControlTextEditingDelegate,
+    NSMenuItem, NSMenuItemValidation, NSStatusItem, NSTableColumn, NSTableRowView, NSTableView, NSTableViewDataSource,
+    NSTableViewDelegate, NSTextFieldDelegate, NSTextView, NSView, NSWindowDelegate,
 };
 use objc2_foundation::{
     NSDistributedNotificationCenter, NSIndexSet, NSInteger, NSMutableIndexSet, NSNotification,
@@ -21,7 +22,7 @@ use objc2_foundation::{
 
 use crate::hotkey::Hotkeys;
 use crate::panel::{self, Accessory, PanelUi, RowView};
-use crate::{actions, bridge, status_item};
+use crate::{actions, bridge, login_item, status_item};
 
 pub struct Ivars {
     ui: OnceCell<PanelUi>,
@@ -159,6 +160,20 @@ define_class!(
             eprintln!("barkley: reloaded, {n} plugins");
             self.show();
         }
+
+        #[unsafe(method(toggleLaunchAtLogin:))]
+        fn toggle_launch_at_login(&self, _sender: Option<&AnyObject>) {
+            if let Err(e) = login_item::toggle() {
+                self.action_failed("Launch at Login", &e);
+            }
+        }
+    }
+
+    unsafe impl NSMenuItemValidation for Controller {
+        #[unsafe(method(validateMenuItem:))]
+        fn validate_menu_item(&self, item: &NSMenuItem) -> bool {
+            self.validate_menu_item_state(item)
+        }
     }
 );
 
@@ -180,6 +195,15 @@ impl Controller {
         let this: Retained<Self> = unsafe { msg_send![super(this), init] };
         this.reload();
         this
+    }
+
+    /// Refresh checkmarks as the status menu opens; the login item can change in System Settings.
+    fn validate_menu_item_state(&self, item: &NSMenuItem) -> bool {
+        if item.action() == Some(sel!(toggleLaunchAtLogin:)) {
+            let on = login_item::is_enabled();
+            item.setState(if on { NSControlStateValueOn } else { NSControlStateValueOff });
+        }
+        true
     }
 
     /// (Re)read config.toml and rebuild plugins. Hotkey changes need a restart.

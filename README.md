@@ -28,6 +28,9 @@ or right-click → **Open** the first time.
 Double-tap ⌘ needs Accessibility permission, and Barkley asks for it on first launch. ⌥Space works
 without any permission.
 
+To start Barkley when you log in, tick menu-bar icon → **Launch at Login**. It then shows up in
+System Settings → General → Login Items.
+
 ## Using it
 
 | Key | Does |
