@@ -14,7 +14,10 @@ use objc2_app_kit::{
     NSApplicationDelegate, NSControl, NSControlTextEditingDelegate, NSStatusItem, NSTableColumn, NSTableRowView,
     NSTableView, NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate, NSTextView, NSView, NSWindowDelegate,
 };
-use objc2_foundation::{NSIndexSet, NSInteger, NSMutableIndexSet, NSNotification};
+use objc2_foundation::{
+    NSDistributedNotificationCenter, NSIndexSet, NSInteger, NSMutableIndexSet, NSNotification,
+    NSNotificationSuspensionBehavior, NSString,
+};
 
 use crate::hotkey::Hotkeys;
 use crate::panel::{self, Accessory, PanelUi, RowView};
@@ -59,10 +62,25 @@ define_class!(
             if !self.ivars().problems.borrow().is_empty() {
                 self.show();
             }
+            self.observe_other_launches();
             #[cfg(debug_assertions)]
             if let Ok(q) = std::env::var("BARKLEY_SMOKE") {
                 self.smoke_test(q);
             }
+        }
+
+        /// Launching the app again (Finder, Spotlight) while it runs opens the panel.
+        #[unsafe(method(applicationShouldHandleReopen:hasVisibleWindows:))]
+        fn should_handle_reopen(&self, _app: &AnyObject, _visible: bool) -> bool {
+            self.show();
+            false
+        }
+    }
+
+    impl Controller {
+        #[unsafe(method(otherInstanceLaunched:))]
+        fn other_instance_launched(&self, _n: &NSNotification) {
+            self.show();
         }
     }
 
@@ -236,7 +254,25 @@ impl Controller {
         if self.ivars().shown.get() { self.hide() } else { self.show() }
     }
 
+    fn observe_other_launches(&self) {
+        let center = NSDistributedNotificationCenter::defaultCenter();
+        // SAFETY: the controller lives for the whole process, so it never dangles as an observer.
+        unsafe {
+            center.addObserver_selector_name_object_suspensionBehavior(
+                self,
+                sel!(otherInstanceLaunched:),
+                Some(&NSString::from_str(SHOW_NOTIFICATION)),
+                None,
+                // Accessory apps are usually inactive, which suspends normal delivery.
+                NSNotificationSuspensionBehavior::DeliverImmediately,
+            );
+        }
+    }
+
     fn show(&self) {
+        if self.ivars().ui.get().is_none() {
+            return; // Not finished launching yet.
+        }
         let ui = self.ui();
         let started = Instant::now();
         self.ivars().shown.set(true);
@@ -428,6 +464,23 @@ fn with(f: impl FnOnce(&Controller)) {
             f(c);
         }
     });
+}
+
+/// Posted by a second launch so the running instance opens its panel.
+pub const SHOW_NOTIFICATION: &str = "dev.barkley.Barkley.show";
+
+/// Asks the running instance (if any) to open its panel.
+pub fn show_running_instance() {
+    let center = NSDistributedNotificationCenter::defaultCenter();
+    // SAFETY: plain post with no object or user info.
+    unsafe {
+        center.postNotificationName_object_userInfo_deliverImmediately(
+            &NSString::from_str(SHOW_NOTIFICATION),
+            None,
+            None,
+            true,
+        );
+    }
 }
 
 pub fn toggle_panel() {

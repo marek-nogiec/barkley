@@ -21,7 +21,7 @@ global-hotkey = "0.8"
 [dependencies.objc2-foundation]
 version = "0.3"
 default-features = false
-features = ["std", "block2", "NSString", "NSArray", "NSDictionary", "NSValue", "NSGeometry", "NSNotification", "NSIndexSet", "NSTimer", "NSDate", "NSURL", "NSObject", "NSRange", "NSData", "NSPathUtilities"]
+features = ["std", "block2", "NSString", "NSArray", "NSDictionary", "NSValue", "NSGeometry", "NSNotification", "NSIndexSet", "NSTimer", "NSDate", "NSURL", "NSObject", "NSRange", "NSData", "NSPathUtilities", "NSDistributedNotificationCenter"]
 
 [dependencies.objc2-quartz-core]
 version = "0.3"
