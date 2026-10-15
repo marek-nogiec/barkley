@@ -55,15 +55,18 @@ define_class!(
             true
         }
 
-        // ⌘1…⌘9 run the matching row.
+        // ⌘1…⌘9 run the matching row. ⌘A selects the query: as a menu-bar app
+        // there is no Edit menu to supply it.
         #[unsafe(method(performKeyEquivalent:))]
         fn perform_key_equivalent(&self, event: &NSEvent) -> bool {
-            match command_digit(event) {
-                Some(n) => {
-                    controller::run_row(n - 1);
-                    true
-                }
-                None => unsafe { msg_send![super(self), performKeyEquivalent: event] },
+            if let Some(n) = command_digit(event) {
+                controller::run_row(n - 1);
+                true
+            } else if is_command(event, "a") {
+                controller::select_query();
+                true
+            } else {
+                unsafe { msg_send![super(self), performKeyEquivalent: event] }
             }
         }
 
@@ -175,12 +178,22 @@ impl RowView {
 
 /// ⌘1…⌘9 → Some(1…9)
 fn command_digit(event: &NSEvent) -> Option<usize> {
+    let n: usize = command_chars(event)?.parse().ok()?;
+    (1..=9).contains(&n).then_some(n)
+}
+
+/// ⌘ plus exactly `key` (no other modifiers).
+fn is_command(event: &NSEvent, key: &str) -> bool {
+    command_chars(event).is_some_and(|c| c.eq_ignore_ascii_case(key))
+}
+
+/// The key pressed with ⌘ alone, or None if other modifiers are held.
+fn command_chars(event: &NSEvent) -> Option<String> {
     let flags = event.modifierFlags() & NSEventModifierFlags::DeviceIndependentFlagsMask;
     if flags != NSEventModifierFlags::Command {
         return None;
     }
-    let n: usize = event.charactersIgnoringModifiers()?.to_string().parse().ok()?;
-    (1..=9).contains(&n).then_some(n)
+    Some(event.charactersIgnoringModifiers()?.to_string())
 }
 
 pub struct PanelUi {
