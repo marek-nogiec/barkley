@@ -54,6 +54,7 @@ cat > "$app/Contents/Info.plist" <<PLIST
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSAppleEventsUsageDescription</key><string>The Empty Trash plugin asks Finder how many items are in the Trash and empties it when you choose it.</string>
   <key>NSBluetoothAlwaysUsageDescription</key><string>The Audio plugin lists your paired Bluetooth headphones and connects them when you pick one.</string>
 </dict>
 </plist>

@@ -1,0 +1,4 @@
+name = "Kill"
+keyword = "kill"
+run = "./run.sh"
+timeout_ms = 1000
