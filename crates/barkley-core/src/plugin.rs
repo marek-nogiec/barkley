@@ -60,7 +60,16 @@ pub struct Item {
 
 impl Item {
     pub fn new(title: impl Into<String>, subtitle: impl Into<String>, action: Action) -> Self {
-        Self { title: title.into(), subtitle: subtitle.into(), score: 0, action, icon: None, verb: None, tag: None, is_error: false }
+        Self {
+            title: title.into(),
+            subtitle: subtitle.into(),
+            score: 0,
+            action,
+            icon: None,
+            verb: None,
+            tag: None,
+            is_error: false,
+        }
     }
 
     pub fn with_score(mut self, score: u32) -> Self {
@@ -74,7 +83,10 @@ impl Item {
     }
 
     pub fn error(title: impl Into<String>, subtitle: impl Into<String>) -> Self {
-        Self { is_error: true, ..Self::new(title, subtitle, Action::Nothing).with_symbol("exclamationmark.triangle.fill") }
+        Self {
+            is_error: true,
+            ..Self::new(title, subtitle, Action::Nothing).with_symbol("exclamationmark.triangle.fill")
+        }
     }
 }
 

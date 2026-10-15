@@ -206,7 +206,11 @@ fn items(devices: &[Device], paired: &[Paired], query: &str, exe: &str) -> Vec<I
                 t => format!("{} \u{b7} {t}", d.direction.label()),
             };
             let item = Item::new(&d.name).subtitle(subtitle).score(score).symbol(d.symbol());
-            Some(if d.is_default { item.tag("Current") } else { item.verb("Switch").run(exe, ["--set", d.direction.tag(), &d.uid]) })
+            Some(if d.is_default {
+                item.tag("Current")
+            } else {
+                item.verb("Switch").run(exe, ["--set", d.direction.tag(), &d.uid])
+            })
         })
         .chain(disconnected)
         .collect();
@@ -299,7 +303,8 @@ mod bluetooth {
             .filter_map(|d| {
                 let address = unsafe { d.addressString() }?.to_string();
                 let minor = unsafe { d.deviceClassMinor() };
-                let last_used_days = unsafe { d.recentAccessDate() }.map(|t| (-t.timeIntervalSinceNow()).max(0.0) as u64 / 86_400);
+                let last_used_days =
+                    unsafe { d.recentAccessDate() }.map(|t| (-t.timeIntervalSinceNow()).max(0.0) as u64 / 86_400);
                 Some(Paired {
                     address,
                     name: unsafe { d.name() }.to_string(),
@@ -465,7 +470,9 @@ mod coreaudio {
         check(unsafe { AudioObjectGetPropertyDataSize(SYSTEM_OBJECT, &a, 0, ptr::null(), &mut size) }, "list devices")?;
         let mut ids = vec![0 as AudioObjectId; size as usize / size_of::<AudioObjectId>()];
         check(
-            unsafe { AudioObjectGetPropertyData(SYSTEM_OBJECT, &a, 0, ptr::null(), &mut size, ids.as_mut_ptr().cast()) },
+            unsafe {
+                AudioObjectGetPropertyData(SYSTEM_OBJECT, &a, 0, ptr::null(), &mut size, ids.as_mut_ptr().cast())
+            },
             "list devices",
         )?;
         ids.truncate(size as usize / size_of::<AudioObjectId>());
@@ -622,18 +629,14 @@ mod tests {
     #[test]
     fn lists_outputs_then_inputs_current_first() {
         let items = sorted(items(&fake(), &[], "", "/x/barkley-audio"));
-        assert_eq!(
-            titles(&items),
-            ["MacBook Pro Speakers", "AirPods Pro", "MacBook Pro Microphone", "AirPods Pro"]
-        );
+        assert_eq!(titles(&items), ["MacBook Pro Speakers", "AirPods Pro", "MacBook Pro Microphone", "AirPods Pro"]);
         assert_eq!(items[0].action, None);
         assert_eq!(items[0].tag.as_deref(), Some("Current"));
         assert_eq!(items[1].tag, None);
         assert!(items.iter().all(|i| i.icon.is_some()));
-        let set = |dir: &str| Some(Action::Run {
-            cmd: "/x/barkley-audio".into(),
-            args: vec!["--set".into(), dir.into(), "pods".into()],
-        });
+        let set = |dir: &str| {
+            Some(Action::Run { cmd: "/x/barkley-audio".into(), args: vec!["--set".into(), dir.into(), "pods".into()] })
+        };
         assert_eq!(items[1].action, set("out"));
         assert_eq!(items[3].action, set("in"));
     }
@@ -656,7 +659,10 @@ mod tests {
         assert_eq!(offline[0].icon, Some(barkley_plugin::Icon::Symbol { symbol: "airpods.max".into() }));
         assert_eq!(
             offline[0].action,
-            Some(Action::Run { cmd: "/x/barkley-audio".into(), args: vec!["--connect".into(), "f0-e1-d2-c3-b4-a5".into()] })
+            Some(Action::Run {
+                cmd: "/x/barkley-audio".into(),
+                args: vec!["--connect".into(), "f0-e1-d2-c3-b4-a5".into()]
+            })
         );
         // Below connected outputs, above inputs.
         let pos = |t: &str| list.iter().position(|i| i.title == t).unwrap();

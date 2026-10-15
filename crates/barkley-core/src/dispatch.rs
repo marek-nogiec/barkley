@@ -118,7 +118,12 @@ mod tests {
         }
     }
 
-    fn p(id: &'static str, keyword: Option<&'static str>, fallback: bool, items: Vec<(&'static str, u32)>) -> Arc<dyn Plugin> {
+    fn p(
+        id: &'static str,
+        keyword: Option<&'static str>,
+        fallback: bool,
+        items: Vec<(&'static str, u32)>,
+    ) -> Arc<dyn Plugin> {
         Arc::new(Fixed { id, keyword, fallback, items })
     }
 
@@ -156,10 +161,7 @@ mod tests {
 
     #[test]
     fn fallback_only_when_nothing_else_matched() {
-        let d = Dispatcher::new(vec![
-            p("fb", Some("g"), true, vec![("fallback", 1)]),
-            p("empty", None, false, vec![]),
-        ]);
+        let d = Dispatcher::new(vec![p("fb", Some("g"), true, vec![("fallback", 1)]), p("empty", None, false, vec![])]);
         assert_eq!(titles(&d.search("anything")), ["fallback"]);
 
         let d = Dispatcher::new(vec![

@@ -8,8 +8,8 @@ use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
 use objc2::{AnyThread, MainThreadMarker, MainThreadOnly, define_class, msg_send, sel};
 use objc2_app_kit::{
-    NSAnimatablePropertyContainer, NSBackingStoreType, NSBezierPath, NSBox, NSBoxType,
-    NSColor, NSEvent, NSEventModifierFlags, NSEventType, NSFocusRingType, NSFont, NSFontWeightMedium, NSFontWeightRegular,
+    NSAnimatablePropertyContainer, NSBackingStoreType, NSBezierPath, NSBox, NSBoxType, NSColor, NSEvent,
+    NSEventModifierFlags, NSEventType, NSFocusRingType, NSFont, NSFontWeightMedium, NSFontWeightRegular,
     NSGlassEffectView, NSGlassEffectViewStyle, NSImage, NSImageScaling, NSImageSymbolConfiguration, NSImageView,
     NSLineBreakMode, NSPanel, NSScreen, NSScrollView, NSTableCellView, NSTableColumn, NSTableRowView, NSTableView,
     NSTableViewStyle, NSTextAlignment, NSTextField, NSView, NSWindowCollectionBehavior, NSWindowStyleMask,
@@ -391,15 +391,13 @@ impl PanelUi {
     pub fn position(&self, mtm: MainThreadMarker) {
         let mouse = NSEvent::mouseLocation();
         let screens = NSScreen::screens(mtm);
-        let screen = screens
-            .iter()
-            .find(|s| point_in_rect(mouse, s.frame()))
-            .or_else(|| NSScreen::mainScreen(mtm));
+        let screen = screens.iter().find(|s| point_in_rect(mouse, s.frame())).or_else(|| NSScreen::mainScreen(mtm));
         let Some(screen) = screen else { return };
         let vf = screen.visibleFrame();
         let top = vf.origin.y + vf.size.height * 0.75 + MARGIN;
         let x = vf.origin.x + (vf.size.width - WINDOW_W) / 2.0;
-        self.panel.setFrame_display(NSRect::new(NSPoint::new(x, top - WINDOW_H), NSSize::new(WINDOW_W, WINDOW_H)), true);
+        self.panel
+            .setFrame_display(NSRect::new(NSPoint::new(x, top - WINDOW_H), NSSize::new(WINDOW_W, WINDOW_H)), true);
     }
 }
 
@@ -444,8 +442,17 @@ pub fn verb(item: &Item) -> Option<&str> {
 }
 
 /// Result row: icon, title over subtitle, and an accessory on the right.
-pub fn make_cell(mtm: MainThreadMarker, item: &Item, row: usize, width: f64, accessory: Accessory) -> Retained<NSTableCellView> {
-    let cell = NSTableCellView::initWithFrame(NSTableCellView::alloc(mtm), NSRect::new(NSPoint::ZERO, NSSize::new(width, ROW_H)));
+pub fn make_cell(
+    mtm: MainThreadMarker,
+    item: &Item,
+    row: usize,
+    width: f64,
+    accessory: Accessory,
+) -> Retained<NSTableCellView> {
+    let cell = NSTableCellView::initWithFrame(
+        NSTableCellView::alloc(mtm),
+        NSRect::new(NSPoint::ZERO, NSSize::new(width, ROW_H)),
+    );
     let icon_x = PILL_INSET + 14.0;
     // Icon column is always reserved so titles line up across rows.
     let text_x = icon_x + ICON + 14.0;
@@ -496,7 +503,8 @@ pub fn make_cell(mtm: MainThreadMarker, item: &Item, row: usize, width: f64, acc
     unsafe { cell.setTextField(Some(&title)) };
 
     if !item.subtitle.is_empty() {
-        let subtitle = label(mtm, &item.subtitle, 13.0, NSRect::new(NSPoint::new(text_x, 9.0), NSSize::new(text_w, 18.0)));
+        let subtitle =
+            label(mtm, &item.subtitle, 13.0, NSRect::new(NSPoint::new(text_x, 9.0), NSSize::new(text_w, 18.0)));
         subtitle.setTextColor(Some(&NSColor::secondaryLabelColor()));
         cell.addSubview(&subtitle);
     } else {
@@ -509,7 +517,10 @@ pub fn make_cell(mtm: MainThreadMarker, item: &Item, row: usize, width: f64, acc
 fn key_badge(mtm: MainThreadMarker, text: &str, right: f64) -> Retained<NSBox> {
     let w = 14.0 + 9.0 * text.chars().count() as f64;
     let h = 22.0;
-    let b = NSBox::initWithFrame(NSBox::alloc(mtm), NSRect::new(NSPoint::new(right - w, (ROW_H - h) / 2.0), NSSize::new(w, h)));
+    let b = NSBox::initWithFrame(
+        NSBox::alloc(mtm),
+        NSRect::new(NSPoint::new(right - w, (ROW_H - h) / 2.0), NSSize::new(w, h)),
+    );
     b.setBoxType(NSBoxType::Custom);
     b.setBorderWidth(0.0);
     b.setCornerRadius(6.0);
