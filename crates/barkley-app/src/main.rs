@@ -4,6 +4,7 @@ mod actions;
 mod anim;
 mod bridge;
 mod controller;
+mod edit_menu;
 mod hotkey;
 mod panel;
 mod status_item;
@@ -22,6 +23,7 @@ fn main() {
     let app = NSApplication::sharedApplication(mtm);
     // No Dock icon, no menu bar of our own (also set via LSUIElement in the bundle).
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+    app.setMainMenu(Some(&edit_menu::build(mtm)));
 
     let controller = controller::Controller::new(mtm);
     app.setDelegate(Some(ProtocolObject::from_ref(&*controller)));
