@@ -6,6 +6,7 @@ mod bridge;
 mod controller;
 mod edit_menu;
 mod hotkey;
+mod login_item;
 mod panel;
 mod status_item;
 

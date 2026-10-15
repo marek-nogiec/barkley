@@ -27,12 +27,15 @@ pub fn install(mtm: MainThreadMarker, controller: &Controller) -> Retained<NSSta
     }
 
     let menu = NSMenu::new(mtm);
-    let entries: [(&str, Option<Sel>, &str); 6] = [
+    let entries: [(&str, Option<Sel>, &str); 8] = [
         ("Show Barkley", Some(sel!(togglePanel:)), ""),
         ("", None, ""),
         ("Open Config File", Some(sel!(openConfig:)), ","),
         ("Open Plugins Folder", Some(sel!(openPluginsFolder:)), ""),
         ("Reload Config & Plugins", Some(sel!(reloadPlugins:)), "r"),
+        ("", None, ""),
+        // Checkmark set in `validateMenuItem:` each time the menu opens.
+        ("Launch at Login", Some(sel!(toggleLaunchAtLogin:)), ""),
         ("", None, ""),
     ];
     for (title, action, key) in entries {
