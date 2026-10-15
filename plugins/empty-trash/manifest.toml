@@ -1,0 +1,4 @@
+name = "Empty Trash"
+# No keyword: answers "empty", "empty tr…", "trash" typed anywhere; prints nothing otherwise.
+run = "./run.sh"
+timeout_ms = 2000
