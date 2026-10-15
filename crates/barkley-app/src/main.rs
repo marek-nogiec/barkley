@@ -14,7 +14,8 @@ use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
 
 fn main() {
     let Some(_instance) = single_instance() else {
-        eprintln!("Barkley is already running");
+        eprintln!("Barkley is already running; opening its panel");
+        controller::show_running_instance();
         return;
     };
     let mtm = MainThreadMarker::new().expect("must run on the main thread");
@@ -30,7 +31,7 @@ fn main() {
 
 /// Holds an exclusive lock for the life of the process, so a second copy (another
 /// bundle path, `open -n`, the bare binary) exits instead of fighting over the
-/// hotkeys. The OS drops the lock if we crash. `None` = another instance has it.
+/// hotkeys (it asks the running one to open its panel). The OS drops the lock if we crash. `None` = another instance has it.
 /// Debug smoke runs skip it so they work next to an installed Barkley.
 fn single_instance() -> Option<Option<std::fs::File>> {
     if cfg!(debug_assertions) && std::env::var_os("BARKLEY_SMOKE").is_some() {
