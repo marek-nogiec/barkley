@@ -1,0 +1,4 @@
+name = "Echo"
+keyword = "echo"
+run = "./run.sh"
+timeout_ms = 1500

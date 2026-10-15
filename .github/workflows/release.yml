@@ -1,0 +1,43 @@
+name: Release
+
+# Every merge to main publishes target/Barkley.app as a GitHub release,
+# tagged v<workspace version>-r<run number>.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: checks
+    runs-on: macos-26
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: Swatinem/rust-cache@v2
+      - name: Build app bundle
+        run: scripts/bundle.sh
+      - name: Package
+        id: pkg
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          tag="v${version}-r${GITHUB_RUN_NUMBER}"
+          ditto -c -k --keepParent target/Barkley.app "Barkley-${tag}-arm64.zip"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "zip=Barkley-${tag}-arm64.zip" >> "$GITHUB_OUTPUT"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.pkg.outputs.tag }}" "${{ steps.pkg.outputs.zip }}" \
+            --target "$GITHUB_SHA" \
+            --title "Barkley ${{ steps.pkg.outputs.tag }}" \
+            --generate-notes \
+            --notes "Apple Silicon, macOS 26+. Ad-hoc signed (not notarized): after unzipping, run \`xattr -dr com.apple.quarantine Barkley.app\` or right-click → Open the first time."

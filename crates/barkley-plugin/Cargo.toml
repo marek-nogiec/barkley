@@ -1,0 +1,11 @@
+[package]
+name = "barkley-plugin"
+description = "Protocol types and helpers for writing Barkley plugins in Rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true

@@ -1,0 +1,29 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "plugins/audio", "plugins/units"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+barkley-core = { path = "crates/barkley-core", version = "0.1.0" }
+barkley-plugin = { path = "crates/barkley-plugin", version = "0.1.0" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "1.1"
+dirs = "7.0"
+nucleo-matcher = "0.3"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# Proc macros and build scripts run inside the compiler: don't strip them
+# (stripping a proc-macro dylib leaves it unloadable on macOS).
+[profile.release.build-override]
+strip = false

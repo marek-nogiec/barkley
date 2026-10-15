@@ -1,0 +1,13 @@
+[package]
+name = "barkley-units"
+description = "Barkley plugin: unit conversion"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+barkley-plugin.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

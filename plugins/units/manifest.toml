@@ -1,0 +1,4 @@
+name = "Units"
+# No keyword: sees every query, answers only when it looks like "10 km to mi".
+run = "./barkley-units"
+timeout_ms = 500

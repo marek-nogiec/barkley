@@ -1,0 +1,11 @@
+name = "Web Search"
+keyword = "g"
+# Also answers any query nothing else matched.
+fallback = true
+run = "./run.sh"
+timeout_ms = 500
+
+[env]
+# Override per user in config.toml: [plugin.web-search.env]
+BARKLEY_SEARCH_URL = "https://www.google.com/search?q={query}"
+BARKLEY_SEARCH_NAME = "Google"

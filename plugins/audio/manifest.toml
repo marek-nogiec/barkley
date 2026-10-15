@@ -1,0 +1,6 @@
+name = "Audio"
+keyword = "audio"
+run = "./barkley-audio"
+# Stay running between queries: CoreAudio's client handshake costs ~80 ms per
+# process start, which would make every keystroke lag.
+persistent = true

@@ -1,0 +1,22 @@
+[package]
+name = "barkley-audio"
+description = "Barkley plugin: switch audio input/output devices"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+barkley-plugin.workspace = true
+# Paired-but-disconnected Bluetooth headphones, which CoreAudio doesn't list.
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSEnumerator", "NSString", "NSDate"] }
+objc2-io-bluetooth = { version = "0.3.2", default-features = false, features = [
+    "std",
+    "objc2",
+    "objc2-foundation",
+    "Bluetooth",
+    "IOBluetoothObject",
+    "IOBluetoothDevice",
+    "IOBluetoothUserLib",
+] }

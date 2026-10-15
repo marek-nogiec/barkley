@@ -1,0 +1,42 @@
+[package]
+name = "barkley-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "barkley"
+path = "src/main.rs"
+
+[dependencies]
+barkley-core.workspace = true
+objc2 = "0.6"
+block2 = "0.6"
+dispatch2 = "0.3"
+global-hotkey = "0.8"
+
+# Only the AppKit/Foundation/QuartzCore classes we use; the defaults compile
+# every framework class (CoreData, CloudKit, …) and slow down clean builds.
+[dependencies.objc2-foundation]
+version = "0.3"
+default-features = false
+features = ["std", "block2", "NSString", "NSArray", "NSDictionary", "NSValue", "NSGeometry", "NSNotification", "NSIndexSet", "NSTimer", "NSDate", "NSURL", "NSObject", "NSRange", "NSData", "NSPathUtilities"]
+
+[dependencies.objc2-quartz-core]
+version = "0.3"
+default-features = false
+features = ["std", "objc2-core-foundation", "CALayer", "CAAnimation", "CABase", "CAMediaTiming", "CAMediaTimingFunction", "CATransform3D"]
+
+[dependencies.objc2-app-kit]
+version = "0.3"
+default-features = false
+features = [
+    "std", "block2", "objc2-quartz-core", "objc2-core-foundation",
+    "NSApplication", "NSResponder", "NSRunningApplication", "NSWindow", "NSPanel", "NSView", "NSControl", "NSCell",
+    "NSTextField", "NSText", "NSTextView", "NSTableView", "NSTableColumn", "NSTableRowView", "NSTableCellView",
+    "NSScrollView", "NSClipView", "NSEvent", "NSScreen", "NSColor", "NSFont", "NSFontDescriptor", "NSImage", "NSImageView",
+    "NSImageCell", "NSGlassEffectView", "NSAnimation", "NSAnimationContext", "NSWorkspace", "NSAccessibility",
+    "NSPasteboard", "NSStatusBar", "NSStatusItem", "NSStatusBarButton", "NSButton", "NSMenu", "NSMenuItem",
+    "NSGraphics", "NSParagraphStyle", "NSUserInterfaceLayout", "NSBezierPath", "NSBox", "NSBitmapImageRep", "NSImageRep", "NSTableHeaderView", "NSUserInterfaceItemIdentification",
+]
