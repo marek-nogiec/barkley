@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
 <defs><clipPath id="sq"><rect width="512" height="512" rx="114"/></clipPath></defs>
 <g transform="translate(51.2,51.2) scale(0.8)" clip-path="url(#sq)"><rect width="512" height="512" rx="114" fill="#f3e9d6"/>
-<g transform="translate(0,22) scale(1.02) translate(-5,0)" stroke="#2a2320" stroke-width="12" stroke-linejoin="round">
+<g transform="translate(256,256) scale(1.8) translate(-256,-285)"><g transform="translate(0,22) scale(1.02) translate(-5,0)" stroke="#2a2320" stroke-width="12" stroke-linejoin="round">
 <path d="M176 150 C 150 190 118 300 112 380 C 108 440 150 470 190 440 C 215 420 222 340 206 200 Z" fill="#b08a5e"/><path d="M336 150 C 362 190 394 300 400 380 C 404 440 362 470 322 440 C 297 420 290 340 306 200 Z" fill="#b08a5e"/>
 <path d="M256 96 C 330 96 372 146 372 212 C 372 282 338 342 322 362 C 300 388 212 388 190 362 C 174 342 140 282 140 212 C 140 146 182 96 256 96 Z" fill="#d4b183"/>
 <path d="M256 262 C 300 262 322 300 318 338 C 314 370 290 384 256 384 C 222 384 198 370 194 338 C 190 300 212 262 256 262 Z" fill="#eedcbd" stroke-width="8"/>
@@ -13,5 +13,5 @@
 <circle cx="296" cy="234" r="36" fill="rgba(255,255,255,.18)" stroke="#2a2320" stroke-width="10"/>
 <circle cx="296" cy="234" r="36" fill="none" stroke="#e2b64a" stroke-width="5"/>
 <path d="M330 248 C 346 266 334 300 348 330" fill="none" stroke-width="5" stroke-dasharray="1 7" stroke-linecap="round"/>
-</g>
+</g></g>
 </g></svg>
