@@ -403,7 +403,9 @@ impl Controller {
                     with(|c| eprintln!("smoke: after hide, visible={}", c.ui().panel.isVisible()));
                     std::process::exit(0);
                 });
-                unsafe { objc2_foundation::NSTimer::scheduledTimerWithTimeInterval_repeats_block(0.4, false, &after_hide) };
+                unsafe {
+                    objc2_foundation::NSTimer::scheduledTimerWithTimeInterval_repeats_block(0.4, false, &after_hide)
+                };
             });
         });
         unsafe { objc2_foundation::NSTimer::scheduledTimerWithTimeInterval_repeats_block(0.5, false, &block) };

@@ -62,8 +62,12 @@ pub struct Item {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Action {
-    OpenUrl { url: String },
-    Copy { text: String },
+    OpenUrl {
+        url: String,
+    },
+    Copy {
+        text: String,
+    },
     Run {
         cmd: String,
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -190,10 +194,10 @@ mod tests {
         serve(input.as_bytes(), &mut out, |q| vec![Item::new(q.to_uppercase())]);
         let lines: Vec<Response> =
             String::from_utf8(out).unwrap().lines().map(|l| serde_json::from_str(l).unwrap()).collect();
-        assert_eq!(lines, [
-            Response { id: 7, items: vec![Item::new("A")] },
-            Response { id: 8, items: vec![Item::new("B")] },
-        ]);
+        assert_eq!(
+            lines,
+            [Response { id: 7, items: vec![Item::new("A")] }, Response { id: 8, items: vec![Item::new("B")] },]
+        );
     }
 
     #[test]

@@ -258,7 +258,7 @@ neither.
 **Checks:**
 
 ```sh
-cargo test --workspace && cargo clippy --workspace --all-targets && cargo deny check
+cargo fmt --all --check && cargo test --workspace && cargo clippy --workspace --all-targets -- -D warnings && cargo deny check
 ```
 
 Debug builds also take a smoke hook. After `scripts/bundle.sh --debug`, running
@@ -270,6 +270,11 @@ CI runs the same checks on every pull request. Every merge to `main` publishes t
 release (`v<version>-r<run>`), and the website in [`docs/`](docs) is redeployed to GitHub Pages with the
 new download link (`scripts/prepare-pages.sh`). `assets/og.html` is the source for the social preview
 image `docs/og.png`.
+
+## Contributing and security
+
+Contributions, especially new plugins, are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Report
+suspected vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 

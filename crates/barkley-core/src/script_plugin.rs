@@ -269,7 +269,8 @@ impl Plugin for ScriptPlugin {
 
     fn query(&self, q: &Query) -> Vec<Item> {
         // Called via our keyword → just the args; as a general/fallback plugin → everything.
-        let arg = if q.keyword.is_some() && q.keyword.as_deref() == self.keyword() { q.args.as_str() } else { q.text() };
+        let arg =
+            if q.keyword.is_some() && q.keyword.as_deref() == self.keyword() { q.args.as_str() } else { q.text() };
         let result = if self.manifest.persistent { self.run_persistent(arg) } else { self.run_once(arg) };
         result.unwrap_or_else(|e| vec![Item::error(format!("{}: plugin error", self.manifest.name), e)])
     }
@@ -417,7 +418,11 @@ done
 
     #[test]
     fn persistent_plugin_reuses_one_process() {
-        let dir = make_plugin("persist", "name = \"P\"\nkeyword = \"p\"\npersistent = true\nrun = \"./run.sh\"\n", PERSISTENT);
+        let dir = make_plugin(
+            "persist",
+            "name = \"P\"\nkeyword = \"p\"\npersistent = true\nrun = \"./run.sh\"\n",
+            PERSISTENT,
+        );
         let p = ScriptPlugin::load(&dir).unwrap();
         let a = p.query(&Query::parse("p one")).remove(0).title;
         let b = p.query(&Query::parse("p two")).remove(0).title;

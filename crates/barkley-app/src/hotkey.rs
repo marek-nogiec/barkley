@@ -98,11 +98,7 @@ pub struct Hotkeys {
 }
 
 impl Hotkeys {
-    pub fn install(
-        double_cmd: bool,
-        chord: &str,
-        on_trigger: impl Fn() + Clone + 'static,
-    ) -> Rc<RefCell<Self>> {
+    pub fn install(double_cmd: bool, chord: &str, on_trigger: impl Fn() + Clone + 'static) -> Rc<RefCell<Self>> {
         let this = Rc::new(RefCell::new(Self::default()));
 
         if !chord.trim().is_empty() {

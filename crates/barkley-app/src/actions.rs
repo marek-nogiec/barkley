@@ -73,7 +73,10 @@ mod tests {
 
     #[test]
     fn failure_detail_takes_last_line_without_program_prefix() {
-        assert_eq!(failure_detail("warn\nbarkley-audio: couldn't connect Studio Buds\n\n").as_deref(), Some("couldn't connect Studio Buds"));
+        assert_eq!(
+            failure_detail("warn\nbarkley-audio: couldn't connect Studio Buds\n\n").as_deref(),
+            Some("couldn't connect Studio Buds")
+        );
         assert_eq!(failure_detail("Error: x: y").as_deref(), Some("x: y"));
         assert_eq!(failure_detail("no prefix here").as_deref(), Some("no prefix here"));
         assert_eq!(failure_detail(" \n"), None);
