@@ -384,6 +384,11 @@ impl Controller {
         self.set_items(vec![Item::error(format!("{what} failed"), detail)]);
     }
 
+    /// ⌘A: select the whole query, wherever focus is.
+    pub fn select_query(&self) {
+        unsafe { self.ui().field.selectText(None) };
+    }
+
     /// Mouse moved over the results: select the row under it, Spotlight-style.
     pub fn hover(&self, window_point: objc2_foundation::NSPoint) {
         let table = &self.ui().table;
@@ -501,6 +506,10 @@ pub fn run_row(row: usize) {
 
 pub fn action_failed(what: &str, detail: &str) {
     with(|c| c.action_failed(what, detail));
+}
+
+pub fn select_query() {
+    with(Controller::select_query);
 }
 
 pub fn hover(window_point: objc2_foundation::NSPoint) {
