@@ -28,6 +28,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "barkley-bookmarks"
+version = "0.1.0"
+dependencies = [
+ "barkley-plugin",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "barkley-core"
 version = "0.1.0"
 dependencies = [
