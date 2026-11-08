@@ -10,8 +10,8 @@ A tiny Alfred-style launcher for macOS 26+ with a Liquid Glass UI, written in Ru
 `objc2`). It sits in the menu bar. Double-tap ⌘ (or press ⌥Space), type, hit Enter.
 
 Everything it can do comes from plugins: small programs that turn what you type into a list of rows.
-Plugins can be shell scripts or Rust binaries. The bundled ones (web search, units, audio
-devices, kill, empty trash) are ordinary plugins, built the same way you'd build your own.
+Plugins can be shell scripts or Rust binaries. The bundled ones (web search, bookmarks, units,
+audio devices, kill, empty trash) are ordinary plugins, built the same way you'd build your own.
 
 ## Install
 
@@ -46,6 +46,7 @@ Bundled plugins:
 | Type | Plugin | Does |
 |---|---|---|
 | `g rust lang` | Web search | Opens a Google search. Any query nothing else matched also gets a "Search Google for …" row. |
+| `g kl`, `g panel` | Bookmarks | Opens the URL you saved under that alias, ranked above the search row. `g` alone lists them all, plus **Edit bookmarks**. See [Bookmarks](#bookmarks). |
 | `10 km to mi`, `100 f in c`, `2 gb to mb` | Units | Converts length, mass, volume, temperature and data. Enter copies the number. |
 | `audio`, `audio out`, `audio in airpods` | Audio | Lists input/output devices and switches the default. Also lists paired Bluetooth headphones that aren't connected; Enter connects them. Needs Bluetooth permission (asked on first use). |
 | `kill slack` | Kill | Lists matching processes; Enter quits the selected one (SIGTERM). |
@@ -75,6 +76,21 @@ enabled = false
 ```
 
 A folder in your plugins dir with the same name as a bundled plugin replaces the bundled one.
+
+### Bookmarks
+
+`~/Library/Application Support/Barkley/bookmarks.toml` is created on first `g`. Open it with
+`g` → **Edit bookmarks**. Edits apply on the next query, no reload needed.
+
+```toml
+kl = "https://kleszcz.com.pl/"
+panel = { url = "https://kleszcz.com.pl/panel/app", title = "Kleszcz panel" }
+```
+
+An exact alias ranks first, then aliases starting with what you typed, then titles and URLs
+containing it. To keep the file elsewhere (e.g. dotfiles), set
+`[plugin.bookmarks.env] BARKLEY_BOOKMARKS_FILE = "~/dotfiles/bookmarks.toml"`. Bookmarks share
+the `g` keyword with web search; change it with `[plugin.bookmarks] keyword = "…"`.
 
 ## Plugins
 

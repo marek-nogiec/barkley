@@ -1,0 +1,11 @@
+name = "Bookmarks"
+# Shares `g` with Web Search: `g kl` opens the URL saved as `kl`, ranked above the
+# search row; anything that isn't an alias still searches.
+keyword = "g"
+run = "./barkley-bookmarks"
+timeout_ms = 500
+
+# The bookmarks live in ~/Library/Application Support/Barkley/bookmarks.toml (created
+# on first use). To keep them elsewhere, e.g. in a dotfiles repo, set in config.toml:
+# [plugin.bookmarks.env]
+# BARKLEY_BOOKMARKS_FILE = "~/dotfiles/barkley-bookmarks.toml"
