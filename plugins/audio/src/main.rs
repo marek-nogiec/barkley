@@ -3,7 +3,8 @@
 //! Query mode (what Barkley runs): `barkley-audio "<filter>"` prints devices.
 //! Each item's action re-runs this binary as `barkley-audio --set out <uid>`,
 //! or `--connect <address>` for paired Bluetooth devices that aren't connected
-//! (CoreAudio only knows about connected ones).
+//! (CoreAudio only knows about connected ones). `--allow-bluetooth` asks macOS
+//! for Bluetooth access, which listing paired devices needs.
 
 use barkley_plugin::Item;
 
@@ -244,13 +245,60 @@ fn main() {
         return;
     }
 
+    if args.get(1).map(String::as_str) == Some("--allow-bluetooth") {
+        exit_on_err(bluetooth::request());
+        return;
+    }
+
     let exe = std::env::current_exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
     // Persistent (see manifest): CoreAudio's ~80 ms client handshake happens once.
-    barkley_plugin::run(|query| match coreaudio::devices() {
-        Ok(devices) => items(&devices, &bluetooth::paired_audio(), query, &exe),
-        Err(e) => vec![Item::new("Can't list audio devices").subtitle(e).symbol("exclamationmark.triangle.fill")],
+    let mut allowed = false;
+    barkley_plugin::run(|query| {
+        // Never touch IOBluetooth without access: it blocks on the permission prompt
+        // and the query times out. Once granted, stop asking (revoking it kills us anyway).
+        let access = if allowed { BtAccess::Allowed } else { bluetooth::access() };
+        allowed = access == BtAccess::Allowed;
+        let paired = if allowed { bluetooth::paired_audio() } else { Vec::new() };
+        match coreaudio::devices() {
+            Ok(devices) => {
+                let mut list = items(&devices, &paired, query, &exe);
+                list.extend(bluetooth_hint(access, query, &exe));
+                list
+            }
+            Err(e) => vec![Item::new("Can't list audio devices").subtitle(e).symbol("exclamationmark.triangle.fill")],
+        }
     });
 }
+
+/// Whether Barkley may use Bluetooth (macOS asks per app, Barkley being the responsible app).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BtAccess {
+    Allowed,
+    NotAsked,
+    Denied,
+}
+
+/// Without Bluetooth access, paired-but-disconnected headphones are missing:
+/// one row at the end of the unfiltered output list says how to get them.
+fn bluetooth_hint(access: BtAccess, query: &str, exe: &str) -> Option<Item> {
+    let (only, needle) = parse_filter(query);
+    if access == BtAccess::Allowed || !needle.is_empty() || only == Some(Direction::Input) {
+        return None;
+    }
+    let item = Item::new("Show paired Bluetooth devices").score(1).symbol("headphones");
+    Some(match access {
+        BtAccess::NotAsked => item
+            .subtitle("Allow Bluetooth access to list headphones that aren\u{2019}t connected")
+            .verb("Allow")
+            .run(exe, ["--allow-bluetooth"]),
+        _ => item
+            .subtitle("Bluetooth access is off for Barkley \u{b7} turn it on in System Settings")
+            .verb("Open Settings")
+            .run("/usr/bin/open", [BT_SETTINGS_URL]),
+    })
+}
+
+const BT_SETTINGS_URL: &str = "x-apple.systempreferences:com.apple.preference.security?Privacy_Bluetooth";
 
 fn exit_on_err(r: Result<(), String>) {
     if let Err(e) = r {
@@ -282,10 +330,33 @@ mod bluetooth {
     //! Paired Bluetooth devices via IOBluetooth. Needs Bluetooth permission,
     //! which macOS asks for on behalf of Barkley (the responsible app).
 
+    use objc2_core_bluetooth::{CBManager, CBManagerAuthorization};
     use objc2_foundation::NSString;
     use objc2_io_bluetooth::IOBluetoothDevice;
 
-    use super::Paired;
+    use super::{BtAccess, Paired};
+
+    /// Current permission. Never prompts, never blocks.
+    pub fn access() -> BtAccess {
+        // SAFETY: class property, no arguments; macOS 10.15+.
+        match unsafe { CBManager::authorization_class() } {
+            CBManagerAuthorization::AllowedAlways => BtAccess::Allowed,
+            CBManagerAuthorization::NotDetermined => BtAccess::NotAsked,
+            _ => BtAccess::Denied,
+        }
+    }
+
+    /// Trigger the system prompt and wait for the answer (run as an action, so no timeout).
+    pub fn request() -> Result<(), String> {
+        if access() == BtAccess::NotAsked {
+            // The first IOBluetooth call is what makes macOS ask.
+            let _ = paired_audio();
+        }
+        match access() {
+            BtAccess::Allowed => Ok(()),
+            _ => Err("Bluetooth access not granted; turn it on in System Settings \u{2192} Privacy & Security \u{2192} Bluetooth".into()),
+        }
+    }
 
     const CLASS_MAJOR_AUDIO: u32 = 0x04;
     const MINOR_LOUDSPEAKER: u32 = 0x05;
@@ -723,5 +794,26 @@ mod tests {
             let defaults = devices.iter().filter(|d| d.direction == dir && d.is_default).count();
             assert!(defaults <= 1, "{dir:?}: {devices:?}");
         }
+    }
+
+    #[test]
+    fn bluetooth_hint_only_without_access_and_filter() {
+        assert!(bluetooth_hint(BtAccess::Allowed, "", "x").is_none());
+        assert!(bluetooth_hint(BtAccess::NotAsked, "pods", "x").is_none());
+        assert!(bluetooth_hint(BtAccess::NotAsked, "in", "x").is_none());
+        assert!(bluetooth_hint(BtAccess::NotAsked, "out", "x").is_some());
+
+        let ask = bluetooth_hint(BtAccess::NotAsked, "", "/x/barkley-audio").unwrap();
+        assert_eq!(
+            ask.action,
+            Some(Action::Run { cmd: "/x/barkley-audio".into(), args: vec!["--allow-bluetooth".into()] })
+        );
+
+        let denied = bluetooth_hint(BtAccess::Denied, "", "x").unwrap();
+        assert_eq!(denied.verb.as_deref(), Some("Open Settings"));
+        assert_eq!(
+            denied.action,
+            Some(Action::Run { cmd: "/usr/bin/open".into(), args: vec![BT_SETTINGS_URL.into()] })
+        );
     }
 }

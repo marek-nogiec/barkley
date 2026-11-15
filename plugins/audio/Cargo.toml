@@ -20,3 +20,5 @@ objc2-io-bluetooth = { version = "0.3.2", default-features = false, features = [
     "IOBluetoothDevice",
     "IOBluetoothUserLib",
 ] }
+# Read Bluetooth permission without prompting or blocking (IOBluetooth can't).
+objc2-core-bluetooth = { version = "0.3.2", default-features = false, features = ["std", "CBManager"] }
